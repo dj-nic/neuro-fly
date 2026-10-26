@@ -1,0 +1,32 @@
+name: Fehler melden
+description: Ein Problem mit Setup, Datenprüfung oder Simulation nachvollziehbar melden.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Erwartetes und beobachtetes Verhalten
+      description: Was sollte passieren und was ist tatsächlich passiert?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Schritte zur Reproduktion
+      description: Befehle, Arbeitsverzeichnis und verwendeten Referenzcommit nennen.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Umgebung
+      description: Board oder Cloud-CPU, OS, Python-Version, Backend und Hardwarestatus.
+      placeholder: "Zum Beispiel: Cloud x86_64, Linux, Python 3.12, Cython, keine Hardware."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevante Ausgabe
+      description: Nur relevante Ausschnitte; keine Zugangsdaten oder privaten Umgebungswerte.
+      render: text
