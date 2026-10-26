@@ -205,6 +205,10 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Local FlyBrain setup and downloaded biological data
+/artifacts/
+/connectome_data/
+
 # Ruff stuff:
 .ruff_cache/
 
