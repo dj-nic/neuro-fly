@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">neuro-fly — FlyBrain Reflex</title>
+  <desc id="desc">Dunkles Projektbanner mit einem abstrakten neuronalen Netzwerk. Connectome, Simulation und Robotik.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#101c2d"/><stop offset="1" stop-color="#17152d"/></linearGradient>
+    <linearGradient id="accent"><stop stop-color="#66e2cb"/><stop offset="1" stop-color="#a897ff"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#8172df" stop-opacity=".2"/><stop offset="1" stop-color="#8172df" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1200" height="340" rx="24" fill="url(#bg)"/>
+  <circle cx="945" cy="166" r="220" fill="url(#halo)"/>
+  <path d="M48 42H1152" stroke="#fff" stroke-opacity=".08"/>
+  <rect x="64" y="75" width="186" height="28" rx="14" fill="#66e2cb" fill-opacity=".1" stroke="#66e2cb" stroke-opacity=".3"/>
+  <text x="157" y="94" text-anchor="middle" fill="#89ead7" font-family="Arial, sans-serif" font-size="11" letter-spacing="2">FLYBRAIN REFLEX</text>
+  <text x="60" y="185" fill="#f4f7fc" font-family="Arial, sans-serif" font-size="76" font-weight="700" letter-spacing="-3">neuro-fly</text>
+  <text x="66" y="227" fill="#bdc9db" font-family="Arial, sans-serif" font-size="20">Vom Annäherungsreiz zum neuronalen Reflex.</text>
+  <rect x="66" y="264" width="45" height="3" rx="1.5" fill="url(#accent)"/>
+  <text x="125" y="270" fill="#9caec5" font-family="Arial, sans-serif" font-size="12" letter-spacing="2">CONNECTOME · SIMULATION · ROBOTIK</text>
+  <g fill="none" stroke="#a897ff" stroke-opacity=".35" stroke-width="2">
+    <path d="M780 109L868 90L950 165L868 247L780 227M780 109L842 169L780 227M868 90L842 169L868 247M842 169L950 165L1042 100M950 165L1057 232M868 90L1042 100M868 247L1057 232M1042 100L1094 164L1057 232"/>
+    <path d="M842 169L950 165L1057 232" stroke="#66e2cb" stroke-opacity=".9" stroke-width="3"/>
+  </g>
+  <g fill="#141d30" stroke="#a897ff" stroke-width="2">
+    <circle cx="780" cy="109" r="7"/><circle cx="780" cy="227" r="7"/>
+    <circle cx="868" cy="90" r="9"/><circle cx="868" cy="247" r="9"/>
+    <circle cx="1042" cy="100" r="9"/><circle cx="1094" cy="164" r="7"/>
+  </g>
+  <g fill="#66e2cb"><circle cx="842" cy="169" r="10"/><circle cx="950" cy="165" r="16"/><circle cx="1057" cy="232" r="10"/></g>
+  <circle cx="950" cy="165" r="29" fill="none" stroke="#66e2cb" stroke-opacity=".25"/>
+</svg>
