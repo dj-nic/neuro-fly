@@ -6,6 +6,12 @@ Wir verwenden bereits `dj-nic/neuro-fly`; kein weiteres eigenes Repository anleg
 Die unten genannten ursprünglichen Namen und die Checkliste sind Planungsstand,
 keine aktuellen Nachweise. NeuroHex bleibt ein separates Referenz-Repository.
 
+**Aktualisierung 30.10.2026:** Die ursprüngliche Kamera- und Servo-Planung ist
+entfallen. Aktuell stehen ein laserbasierter ToF- oder Ultraschallsensor sowie
+eine LED oder ein anderer einfacher physischer Ausgang zur Diskussion. Noch
+ist keines dieser Bauteile ausgewählt oder getestet. Für den verbindlichen
+Projektstand bitte `STATUS.md` verwenden.
+
 ---
 
 Umsetzungsanleitung – FlyBrain Reflex

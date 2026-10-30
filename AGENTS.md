@@ -9,10 +9,10 @@ Das Berufsschulprojekt **neuro-fly / FlyBrain Reflex** soll einen biologisch beg
 ```text
 Annäherung → Sensor → normierter Reiz (0..1)
            → Spiking Neural Network (Brian2 / NeuroHex-Referenz)
-           → escape_magnitude → Schutzlogik → Servo
+           → escape_magnitude → Schutzlogik → LED/einfacher physischer Ausgang
 ```
 
-Mindestanforderung: **mindestens 1 realer Sensor und 1 realer Aktor**. Ziel ist zunächst **ein** Servo, **nicht** der vollständige NeuroHex-Roboter mit 18 Servos. Optional sind LED und eine Webansicht. Der Fluchtimpuls muss nachweisbar aus der **Ausgabe des neuronalen Modells** kommen, nicht aus einer direkten `if distance < threshold: move_servo()`-Abkürzung.
+Mindestanforderung: **mindestens 1 realer Sensor und 1 realer Aktor**. Kamera und Servo sind für den Demonstrator ausgeschlossen. Als Sensor stehen ein laserbasierter ToF-Abstandssensor oder Ultraschall zur Wahl; als einfacher Ausgang voraussichtlich eine LED oder eine andere geeignete Lösung. Die konkrete Auswahl ist offen. Klären, ob eine LED die schulische Aktoranforderung erfüllt. Der Fluchtimpuls muss nachweisbar aus der **Ausgabe des neuronalen Modells** kommen, nicht aus einer direkten `if distance < threshold: switch_output()`-Abkürzung.
 
 Das Fliegennetz ist ein **aus echten Connectome-Daten rekonstruierter neuronaler Teilschaltkreis** (Giant-Fiber-Fluchtweg). Behaupte weder ein vollständiges Gehirn noch ein physiologisch exaktes Fliegenauge: Die Übersetzung eines Abstandssignals auf `visual_input` ist eine technische Annäherung.
 
@@ -23,32 +23,31 @@ Das Fliegennetz ist ein **aus echten Connectome-Daten rekonstruierter neuronaler
 - `scripts/setup.sh` bereitet Referenz, lokale `.venv`, Daten und Check vor; `scripts/validate_brain.py` validiert den Datensatz und prüft den Reflex.
 - Verifiziert auf **Linux x86_64 / Python 3.12**: **992 Neuronen**, **1.308 gerichtete Verbindungen**; die 9 dokumentierten Testläufe mit insgesamt 315 Schritten bestanden die Reflexprüfungen.
 - Cloud-Messwerte: durchschnittlich ~69,5 ms für einen simulierten 20-ms-Step ohne künstliches CPU-Limit, ~310,3 ms und ~554,5 ms in zwei gedrosselten Versuchsbedingungen. Siehe `STATUS.md` und `docs/PI_3B_PROXY.md`.
-- **Keine Hardware vorhanden/getestet:** weder Pi 3B+ noch Sensor, Servo oder GPIO. Auch die ARM-Paketinstallation ist **nicht** nachgewiesen. Cloud-CPU-Drosselung ist **keine** Pi-Emulation. Reaktionszeit <1 s ist ein **Ziel**, kein Messwert.
-- Bislang gibt es noch **keine eigene Sensor-Servo-Anwendung**. Die nächsten Schritte sind Softwareadapter und Mock-Tests.
+- **Keine Hardware vorhanden/getestet:** weder Pi 3B+ noch Sensor, LED/anderer Ausgang oder GPIO. Auch die ARM-Paketinstallation ist **nicht** nachgewiesen. Cloud-CPU-Drosselung ist **keine** Pi-Emulation. Reaktionszeit <1 s ist ein **Ziel**, kein Messwert.
+- `neuro_fly/` enthält einen hardwarefreien Sensor → Brainadapter → Mock-Ausgang-Pfad mit Schutzlogik. 33 schnelle Unit-Tests bestanden unter Windows und WSL/Python 3.12; der separate WSL-Integrationstest bestand mit echtem Kern und 992 Neuronen/1.308 Verbindungen. Testdoubles sind keine neuronalen Nachweise.
 
 ## Geplante Hardware
 
 - **Pi 3B+**, 64-Bit-Raspberry-Pi-OS nach Kompatibilitätsprüfung.
-- **Bevorzugter Abstandssensor: VL53L4CD (I²C)**, als inzwischen ins Auge gefasste Alternative zum schwer verfügbaren VL53L0X. **Noch nicht gekauft / angeschlossen / validiert.**
-- Weitere Optionen: VL53L1X, VL53L0X, HC-SR04 (5-V-ECHO-Pegel vor Pi-GPIO auf 3,3 V anpassen), optional Pi-Kamera; die Kamera beansprucht mehr Rechenleistung.
-- **Ein Servo** als einfacher Fluchtaktor, zunächst per Mock; bei echter Hardware geeignete separate Versorgung, gemeinsame Masse und ungefährliche Winkel/Mechanik beachten. Servo nicht ungeprüft aus einem Pi-GPIO speisen.
-- Hardwarewahl darf nicht ohne Rücksprache als endgültig ausgegeben werden.
+- **Sensoroptionen:** laserbasierter ToF-Abstandssensor (z. B. VL53L4CD oder VL53L0X) oder Ultraschall (z. B. HC-SR04). Noch nicht ausgewählt, gekauft, angeschlossen oder validiert. Bei HC-SR04 den 5-V-ECHO-Pegel vor dem Pi-GPIO auf 3,3 V anpassen.
+- **Ausgang:** LED mit geeignetem Vorwiderstand ist die aktuelle einfache Möglichkeit; eine andere geeignete physische Ausgabe bleibt möglich. Noch nicht ausgewählt oder getestet; die Erfüllung der schulischen Aktoranforderung ist zu klären.
+- Hardwarewahl darf nicht ohne Rücksprache als endgültig ausgegeben werden. Kamera und Servo sind nicht Teil der aktuellen Planung.
 
 ## Architekturvorgaben für neue Implementierungen
 
 Entwickle kleine, separat testbare Module; die Struktur darf passend zum bestehenden Repo gewählt werden:
 
-1. **Sensoradapter**: austauschbar zwischen Mock-Sensor, später VL53L4CD und optional Kamera. Erzeugt `looming_strength: float` in `[0.0, 1.0]` aus **Annäherung**, nicht nur aus einem starren Distanzschwellwert. Messfehler, ungültige Werte, Glättung, Richtung und Zeitabstand von Messungen berücksichtigen.
+1. **Sensoradapter**: austauschbar zwischen Mock-Sensor, später ToF- und Ultraschallsensor. Erzeugt `looming_strength: float` in `[0.0, 1.0]` aus **Annäherung**, nicht nur aus einem starren Distanzschwellwert. Messfehler, ungültige Werte, Glättung, Richtung und Zeitabstand von Messungen berücksichtigen.
 2. **Brainadapter**: kapselt `NeuroHexBrain.step(visual_input=looming_strength, mechanosensory_input=0.0, duration_ms=20.0)` und dessen `escape_magnitude`. Benutze echte validierte Connectome-Daten; kein unbemerktes Dummy-/Zufallsnetz. Fehler bei fehlenden Daten explizit machen.
-3. **Aktoradapter**: Mock-Servo mit Ereignislog/Zeiten; später echte GPIO-/Servo-Implementierung. Ein Schwellwert **auf der Motorausgabe des SNN**, Hysterese, Cooldown, sichere Start- und Endpositionen sowie definierte Fehlerreaktion schützen vor Dauerzucken.
-4. **Orchestrierung**: Sensor → SNN → Aktor, mit klarer Messung von Sensorauslesung, Brain-Step und Aktorzeit. Sensor und Aktor müssen ohne reale Hardware ersetzbar bleiben.
+3. **Aktoradapter**: Mock-Ausgang mit Ereignislog/Zeiten; später eine geeignete GPIO-Ausgabe wie LED. Ein Schwellwert **auf `escape_magnitude` des SNN**, Hysterese, Cooldown und definierte Fehlerreaktion schützen vor Dauerleuchten oder Flattern.
+4. **Orchestrierung**: Sensor → SNN → einfacher Aktor, mit klarer Messung von Sensorauslesung, Brain-Step und Ausgangszeit. Sensor und Aktor müssen ohne reale Hardware ersetzbar bleiben.
 5. **Messung**: CPU, Peak-RAM, Initialisierung, Step-Latenz, Reaktionsdauer und Fehlalarme protokollieren. Für Benchmarks Warm- und Kaltstart unterscheiden; Board/CPU/OS/Python/Backend/Stimulus/Versionen angeben.
 
 Wichtig: Ein berechneter 20-ms-Neuronenschritt ist **nicht** automatisch in 20 ms Echtzeit fertig. Keine künstlich geschönten Latenzzahlen, keine Vermischung von Simulationszeit und Wandzeit.
 
 ## Referenzcode, Daten und Installation
 
-- Upstream **nicht blind kopieren** oder in diesem Repository als Sub-Git-Repo einchecken. Ursprünglich relevant: `snn_brain.py`, `fetch_connectome.py`, ggf. `vision.py` und `main.py` als Referenz. `motor_control.py` ist für den großen Hexapod und nicht für unseren Ein-Servo-Demonstrator gedacht.
+- Upstream **nicht blind kopieren** oder in diesem Repository als Sub-Git-Repo einchecken. Relevant sind `snn_brain.py`, `fetch_connectome.py` und `main.py` als Referenz. `vision.py` und `motor_control.py` gehören zu anderen Hardwarevarianten und sind für unseren Demonstrator nicht eingeplant.
 - Der festgehaltene Checkout wird durch `scripts/setup.sh` als **Nachbarverzeichnis** `../neurohex-reference` eingerichtet. Behalte diesen Stand reproduzierbar; Upstream nicht ungefragt aktualisieren oder dort arbeiten.
 - Echte Daten werden durch die Referenz bezogen. Relevante Dateien sind `connectome_data/adjacency_matrix.npy`, `neuron_metadata.json` und `connection_list.json`. `scripts/validate_brain.py` prüft Struktur, Gruppen, Matrix und Reflexantwort.
 - **Lizenz/Attribution zuerst klären**, bevor fremder Quellcode direkt übernommen oder neu veröffentlicht wird. Upstream nennt MIT, eine eigenständige LICENSE-Datei war beim bisherigen Check nicht gesichert. Datenherkunft, Abrufzeit und Nutzungsbedingungen dokumentieren.
@@ -65,20 +64,18 @@ Wichtig: Ein berechneter 20-ms-Neuronenschritt ist **nicht** automatisch in 20 m
 
 Arbeite inkrementell und dokumentiere Resultate:
 
-1. Bestehende Dateien und offenen Stand überprüfen; keine bereits erledigten Schritte erneut als neu verkaufen.
-2. **Kleine eigene Schnittstellen** für Sensorinput, Brainoutput und Servooutput definieren; nach Möglichkeit Typen und stabile API dokumentieren.
-3. **Mock-Sensor** (z. B. reproduzierbare Annäherungskurve) und **Mock-Servo** implementieren, ohne GPIO-Abhängigkeiten.
-4. Einen durchgehenden **Software-Testpfad** schaffen, bei dem der Mock-Sensor den realen NeuroHex-Kern speist und dessen `escape_magnitude` über Schutzlogik den Mock-Servo auslöst.
-5. Automatisierte Tests für Normalfall, keine Annäherung, entfernte/ungültige Messwerte, Jitter, Auslöse-/Rücksetzschwelle, Cooldown, fehlende Connectome-Daten und wiederholte Reize schreiben. Trenne Tests, die echte Daten brauchen, von schnellen Unit-Tests.
-6. Wenn möglich reproduzierbare Profiling-Verbesserungen untersuchen; **Biologie/Parameter nicht still ändern**. Vorher/nachher mit gleichem Datensatz und Stimulus testen.
-7. `README.md`, `STATUS.md` und ggf. `docs/` auf den nachgewiesenen Stand bringen; Hardwareintegration ausdrücklich offen lassen.
+1. Bestehenden Softwarepfad und offenen Stand prüfen; die vorhandenen Mock-Adapter und Unit-Tests nicht erneut als neue Arbeit behandeln.
+2. Den separaten Integrationstest mit gepinntem NeuroHex-Kern und echten Daten bei Änderungen erneut unter Linux/WSL ausführen; fehlende Voraussetzungen und Ergebnisse dokumentieren.
+3. Datenprovenienz und Lizenz/Attribution klären; Filter- und Schwellwerte später mit dem gewählten Sensor kalibrieren.
+4. Wenn möglich reproduzierbare Profiling-Verbesserungen untersuchen; **Biologie/Parameter nicht still ändern**. Vorher/nachher mit gleichem Datensatz und Stimulus testen.
+5. `README.md`, `STATUS.md` und ggf. `docs/` auf den nachgewiesenen Stand bringen; Hardwareintegration ausdrücklich offen lassen.
 
 ## Sobald der Pi und die Bauteile verfügbar sind
 
 - ARM-/Python-/Brian2-Cython-Kompatibilität, verfügbare CPU/RAM, Thermik, Stromversorgung und Startup prüfen.
 - Unveränderte Referenz mit validierten Connectome-Daten benchmarken.
-- Erst Sensor und Servo **einzeln** und sicher prüfen, dann Kopplung testen.
-- End-to-End-Latenz **vom äußeren Reiz bis zur tatsächlichen Bewegung** messen; Ergebnisse getrennt von Cloud-/Mock-Messungen ausweisen.
+- Erst Sensor und LED/anderen Ausgang **einzeln** und sicher prüfen, dann Kopplung testen.
+- End-to-End-Latenz **vom äußeren Reiz bis zur tatsächlichen Ausgabe** messen; Ergebnisse getrennt von Cloud-/Mock-Messungen ausweisen.
 - Hardwareverdrahtung und Wahl des Sensors dokumentieren; Korrektheit und Stabilität sind wichtiger als unbelegte Echtzeitversprechen.
 
 ## Arbeits- und Git-Regeln

@@ -4,7 +4,7 @@
 
 # neuro-fly
 
-**Ein Fluchtreflex aus dem Fliegenkonnektom. Ein Sensor. Ein Servo.**
+**Ein Fluchtreflex aus dem Fliegenkonnektom. Ein Sensor. Eine einfache Ausgabe.**
 
 Ein Forschungsprototyp für neuronale Robotik auf dem Raspberry Pi 3B+.
 
@@ -23,33 +23,41 @@ Ein Forschungsprototyp für neuronale Robotik auf dem Raspberry Pi 3B+.
 
 Eine Fruchtfliege reagiert auf eine herannahende Gefahr mit einem schnellen
 Fluchtreflex. **FlyBrain Reflex** untersucht, wie sich ein Ausschnitt ihres
-neuronalen Schaltkreises für einen kleinen Roboter nutzen lässt: Ein Sensor
+neuronalen Schaltkreises für einen kleinen Demonstrator nutzen lässt: Ein Sensor
 erkennt Annäherung, ein Spiking Neural Network verarbeitet den Reiz und seine
-motorische Ausgabe soll eine kurze Servobewegung auslösen.
+motorische Ausgabe soll eine sichtbare Reaktion auslösen, zunächst vermutlich
+über eine LED oder einen anderen einfachen physischen Ausgang.
 
 > [!IMPORTANT]
-> **Aktuell: Simulation und Vorbereitung ohne Hardware.** Der separate
-> NeuroHex-Referenzkern wurde mit echten Connectome-Daten geprüft. Eigene
-> Sensor- und Servo-Adapter sowie die Erprobung auf dem Pi 3B+ stehen noch aus.
+> **Aktuell: Software-Demonstrator ohne Hardware.** Der separate
+> NeuroHex-Referenzkern wurde mit echten Connectome-Daten geprüft; ein eigener
+> Mock-Sensor- und Mock-Ausgangspfad ist implementiert. Eine Kamera
+> und ein Servo sind nicht mehr eingeplant. Als Sensor kommen ein laserbasierter
+> ToF-Abstandssensor oder Ultraschall infrage; als einfacher Ausgang eine LED
+> oder eine andere geeignete Lösung. Bauteile und Pi-Erprobung stehen noch aus.
 
-## Vom Reiz zur Bewegung
+## Vom Reiz zur sichtbaren Reaktion
 
 ```mermaid
 flowchart LR
-    A["Abstandssensor<br/>geplant"] --> B["Annäherungsreiz<br/>looming_strength · 0…1"]
+    A["Mock-Abstand<br/>später ToF oder Ultraschall"] --> B["Annäherungsreiz<br/>looming_strength · 0…1"]
     B --> C["Neuronaler Kern<br/>Giant-Fiber-Schaltkreis · Brian2"]
     C --> D["Motorausgabe<br/>escape_magnitude"]
-    D --> E["Hysterese + Cooldown<br/>geplant"]
-    E --> F["Servo-Fluchtbewegung<br/>geplant"]
+    D --> E["Hysterese + Cooldown"]
+    E --> F["Mock-Ausgang<br/>später LED oder Alternative"]
     classDef planned fill:#192333,stroke:#6b7b91,color:#dbe5f3,stroke-dasharray:5 5
     classDef brain fill:#252044,stroke:#aa97ff,color:#f0ebff
-    class A,B,D,E,F planned
+    class A,F planned
     class C brain
 ```
 
-Der Aktor soll durch die **SNN-Ausgabe** ausgelöst werden. Der bevorzugte
-Sensoreinstieg ist ein VL53L0X. Sein Abstandssignal als `visual_input` ist eine
-technische Annäherung, keine Simulation eines vollständigen Fliegenauges.
+Der physische Ausgang soll durch die **SNN-Ausgabe** ausgelöst werden, nicht
+direkt durch einen Distanzschwellwert. Die Sensorwahl ist offen: möglich sind
+ein laserbasierter ToF-Sensor (z. B. VL53L4CD oder VL53L0X) oder ein
+Ultraschallsensor (z. B. HC-SR04). Ein Abstandssignal als `visual_input` ist
+eine technische Annäherungsabbildung, keine Simulation eines vollständigen
+Fliegenauges. Ob eine LED die schulische Aktoranforderung erfüllt, ist noch zu
+klären.
 
 ## Was bereits funktioniert
 
@@ -59,7 +67,8 @@ technische Annäherung, keine Simulation eines vollständigen Fliegenauges.
 | Matrix, Verbindungsliste und neuronale Gruppen prüfen | 992 Neuronen · 1.308 gerichtete Verbindungen |
 | NeuroHex-Referenzkern mit synthetischem Annäherungsreiz ausführen | Reflexprüfung bestanden |
 | Unter begrenztem CPU-Zeitbudget messen | 9 Läufe · 315 Simulationsschritte dokumentiert |
-| Pi 3B+, Sensor und Servo integrieren | Noch offen |
+| Mock-Sensor → echtes SNN → Mock-Ausgang | Unter WSL mit echten Connectome-Daten geprüft |
+| Pi 3B+, Abstandssensor und einfacher physischer Ausgang integrieren | Noch offen |
 
 ## Schnellstart
 
@@ -83,7 +92,7 @@ projekte/
 └── neurohex-reference/     # Separater, festgehaltener Upstream-Stand
 ```
 
-**Erwartete Prüfung:** 35 Schritte à 20 ms, ruhige Motorausgabe ohne Reiz
+**Erwartete Prüfung:** 35 Schritte à 20 ms, ruhige SNN-Ausgabe ohne Reiz
 und ein Fluchtwert über 0,5 bei starkem Annäherungsreiz. Dummy-Daten werden
 abgelehnt. Der JSON-Bericht liegt unter `artifacts/benchmark.json`.
 
@@ -105,6 +114,61 @@ Ein fehlgeschlagener Check liefert einen Exitcode ungleich null.
 
 </details>
 
+## Software-Demonstration ohne Hardware
+
+Die schnellen Tests laufen mit Python auf Windows oder Linux im
+Projektverzeichnis; Brian2 und GPIO sind nicht nötig. Die Strukturtests für
+Connectome-Daten nutzen NumPy und werden übersprungen, falls es nicht
+installiert ist:
+
+```bash
+python -m unittest discover -s tests/unit -v
+```
+
+Für den vollständigen Mock-Pfad mit dem **echten** NeuroHex-Kern unter
+Linux/WSL zunächst das Setup oben ausführen. Zum erstmaligen Anlegen der
+Umgebung benötigt Ubuntu das zur Python-Version passende `python3-venv`-Paket
+mit `ensurepip`; eine vorhandene Umgebung mit Pip wird wiederverwendet.
+Danach:
+
+```bash
+export CC=gcc CXX=g++ MPLBACKEND=Agg MPLCONFIGDIR="$PWD/artifacts/matplotlib"
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+.venv/bin/python -m neuro_fly demo --scenario approach \
+  --reference ../neurohex-reference --report artifacts/mock-demo.json
+.venv/bin/python -m unittest discover -s tests/integration -v
+```
+
+Der Referenzpfad ist optional und zeigt standardmäßig auf den Nachbarordner.
+Weitere reproduzierbare Szenarien sind `still`, `receding`, `jitter`,
+`invalid` und `far`. Ohne den gepinnten Checkout und strukturell validierte
+Connectome-Dateien bricht die Demo mit Fehler ab; sie ersetzt das SNN nicht
+durch ein Dummy-Netz. Ein Integrationslauf bestand unter WSL/x86_64; ein auf
+einer anderen Umgebung übersprungener Test ist kein eigener Nachweis.
+
+Der Abstand wird über relative Annäherungsgeschwindigkeit `v/d` auf
+`looming_strength` abgebildet. Medianfilter und Glättung mindern Jitter;
+ungültige oder veraltete Messungen setzen die Eingabe zurück und schalten den
+Ausgang ab. Die voreingestellten Filter- und Skalierungswerte sind technische
+Demo-Annahmen und müssen mit dem ausgewählten Sensor kalibriert werden:
+Medianfenster 3, EMA α=0,35, Nenner mindestens 50 mm, Vollaussteuerung bei
+1 s⁻¹ und maximal 0,5 s Abstand zwischen gültigen Messungen.
+
+Die Schutzlogik löst ausschließlich aus `escape_magnitude > 0,5` einen
+250-ms-Impuls aus. Ein weiterer Impuls erfordert einen Rückgang unter 0,3 und
+1 s Cooldown. Der Timer läuft unabhängig vom nächsten Brain-Step; seine
+tatsächliche Genauigkeit ist betriebssystemabhängig. Der Bericht enthält
+synthetische Sensorzeit und getrennte Wandzeiten, keine physische
+End-to-End-Latenz.
+
+Die Python-Schnittstellen sind in `neuro_fly` verfügbar: Ein `DistanceSensor`
+liefert `DistanceSample(distance_mm, timestamp_s, valid)`; `ApproachEncoder`
+erzeugt daraus den Reiz. `NeuroHexBrainAdapter.step()` liefert den Fluchtwert,
+und `Output.set_active(bool)` ist die spätere Schnittstelle für eine LED oder
+einen anderen Ausgang. `Pipeline` verbindet diese Bausteine. Zeitstempel der
+Mock-Messreihe sind synthetisch; Impulse und Laufzeiten verwenden die monotone
+Wanduhr.
+
 ## Bisherige Ergebnisse
 
 Messreihe vom **26.10.2026**, Cloud-x86_64, jeweils ein Kern und drei Wiederholungen:
@@ -119,7 +183,7 @@ Messreihe vom **26.10.2026**, Cloud-x86_64, jeweils ein Kern und drei Wiederholu
 > **Diese Werte sind keine Pi-3B+-Messwerte.** Die Cloud-CPU ließ sich nicht
 > stabil auf die dokumentierte Pi-Referenz kalibrieren. Die Reflexfunktion
 > bestand alle neun Läufe; der 20-ms-Echtzeittakt wurde nicht erreicht.
-> Sensor- und Servolatenz sind in den Messungen nicht enthalten.
+> Sensor- und Ausgangslatenz sind in den Messungen nicht enthalten.
 
 [Quellen und Messmethode →](docs/PI_3B_PROXY.md) · [Maschinenlesbare Ergebnisse →](results/cloud-pi-budget-2026-10-26.json)
 
@@ -127,9 +191,10 @@ Messreihe vom **26.10.2026**, Cloud-x86_64, jeweils ein Kern und drei Wiederholu
 
 - [x] **Grundlage:** Referenzkern untersuchen, echte Daten abrufen und Reflex prüfen.
 - [x] **Messbarkeit:** Datenvalidierung und CPU-Budget-Experimente dokumentieren.
-- [ ] **Eigene Steuerung:** Sensoradapter, Mock-Servo, Hysterese und Cooldown entwickeln.
+- [x] **Software-Grundlage:** Mock-Sensor, Brainadapter, Mock-Ausgang und Schutzlogik implementieren.
+- [x] **Echte SNN-Kopplung:** Mock-Pfad mit gepinntem Kern und echten Daten unter WSL prüfen.
 - [ ] **Pi-Baseline:** ARM-Kompatibilität, Laufzeiten, RAM und Langzeitverhalten messen.
-- [ ] **Hardware:** Sensor → SNN → Servo koppeln und reale Reaktionszeiten prüfen.
+- [ ] **Hardware:** Sensor → SNN → einfachen physischen Ausgang koppeln und Reaktionszeiten prüfen.
 
 Die ausführliche Aufgabenliste und die bekannten Grenzen stehen in [STATUS.md](STATUS.md).
 
@@ -138,7 +203,8 @@ Die ausführliche Aufgabenliste und die bekannten Grenzen stehen in [STATUS.md](
 | Einstieg | Inhalt |
 | :--- | :--- |
 | [Projektstand](STATUS.md) | Was belegt ist und was als Nächstes ansteht |
-| [Umsetzungsplan](docs/UMSETZUNG.md) | Ursprüngliche Planung und Hardwareoptionen |
+| [Projektplanung (Word)](docs/Projektplan_Fruchtfliegengehirn_Raspberry_Pi.docx) | Projektidee und aktuelle Hardwareplanung |
+| [Umsetzungsplan](docs/UMSETZUNG.md) | Ursprüngliche Anleitung; aktuelle Hardwareplanung siehe Projektstand |
 | [Pi-Referenzen und Cloud-Messung](docs/PI_3B_PROXY.md) | Quellen, Methode und Grenzen der Drosselung |
 | [Mitwirken](CONTRIBUTING.md) | Entwicklungsablauf und Anforderungen an Änderungen |
 
@@ -150,6 +216,8 @@ neuro-fly/
 ├── .github/                    # Issue- und Pull-Request-Vorlagen
 ├── docs/                       # Planung, Messbericht und Grafiken
 ├── results/                    # Archivierte JSON-Messreihe
+├── neuro_fly/                  # Sensor, Brainadapter, Schutzlogik und Demo
+├── tests/                      # Schnelle Unit- und separate Integrationstests
 ├── scripts/
 │   ├── setup.sh                # Referenz und Python-Umgebung vorbereiten
 │   ├── validate_brain.py       # Echte Daten und Reflexverhalten prüfen

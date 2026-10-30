@@ -27,9 +27,11 @@ zusätzlichen Git-Worktrees ohne ausdrücklichen Auftrag erstellen.
   Laufzeit und RAM begründen.
 
 Der funktionale Check `scripts/validate_brain.py` braucht echte Daten und prüft
-35 Schritte mit Ruhe- und Fluchtverhalten, siehe README. Neue Adapter sollten
-gezielte Verhaltenstests erhalten. Eine automatisierte CI-Suite ist noch
-nicht eingerichtet.
+35 Schritte mit Ruhe- und Fluchtverhalten, siehe README. Schnelle Unit-Tests
+laufen mit `python -m unittest discover -s tests/unit -v`; der separate
+Integrationstest benötigt den gepinnten Referenz-Checkout und echte Daten unter
+Linux/WSL. Neue Adapter sollten gezielte Verhaltenstests erhalten. Eine
+automatisierte CI-Suite ist noch nicht eingerichtet.
 
 ## Dateien und Quellen
 
