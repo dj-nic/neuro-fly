@@ -9,6 +9,7 @@
 Ein Forschungsprototyp für neuronale Robotik auf dem Raspberry Pi 3B+.
 
 ![Status: Vorbereitung](https://img.shields.io/badge/Status-Vorbereitung-e5a84b?style=flat-square)
+[![CI](https://github.com/dj-nic/neuro-fly/actions/workflows/ci.yml/badge.svg)](https://github.com/dj-nic/neuro-fly/actions/workflows/ci.yml)
 ![Python: 3.12 getestet](https://img.shields.io/badge/Python-3.12_getestet-58a6ff?style=flat-square&logo=python&logoColor=white)
 ![Simulation: Brian2](https://img.shields.io/badge/Simulation-Brian2-8b7cf8?style=flat-square)
 ![Zielplattform: Pi 3B+](https://img.shields.io/badge/Zielplattform-Pi_3B%2B-e66b91?style=flat-square&logo=raspberrypi&logoColor=white)

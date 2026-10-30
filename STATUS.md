@@ -23,6 +23,9 @@ Stand: 30.10.2026. Projekt: `dj-nic/neuro-fly`, Arbeitstitel FlyBrain Reflex.
   aber keinen Echtlauf mit dem neuronalen Modell.
 - Unter Ubuntu/WSL/Python 3.12 bestanden alle 33 Tests in einer temporären
   Umgebung mit NumPy. Ohne NumPy werden fünf Strukturtests übersprungen.
+- Eine GitHub-Actions-CI führt die schnellen Unit-Tests mit NumPy auf
+  `ubuntu-latest` und `windows-latest` unter Python 3.12 aus. Sie lädt keine
+  Connectome-Daten und testet weder den echten NeuroHex-Kern noch Hardware.
 - Der separate Integrationstest bestand unter WSL mit echtem NeuroHex-Kern,
   Mock-Sensor und Mock-Ausgang: Stillstand blieb ohne Impuls; Annäherung
   erzeugte eine Auslösung aus `escape_magnitude > 0,5`.

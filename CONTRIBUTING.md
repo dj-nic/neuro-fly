@@ -31,7 +31,9 @@ Der funktionale Check `scripts/validate_brain.py` braucht echte Daten und prüft
 laufen mit `python -m unittest discover -s tests/unit -v`; der separate
 Integrationstest benötigt den gepinnten Referenz-Checkout und echte Daten unter
 Linux/WSL. Neue Adapter sollten gezielte Verhaltenstests erhalten. Eine
-automatisierte CI-Suite ist noch nicht eingerichtet.
+GitHub Actions führt die schnellen Unit-Tests bei Pushes und Pull Requests unter
+Ubuntu und Windows mit Python 3.12 aus. Der hardware- und datenabhängige
+Integrationstest bleibt ein manueller Linux/WSL-Schritt.
 
 ## Dateien und Quellen
 
