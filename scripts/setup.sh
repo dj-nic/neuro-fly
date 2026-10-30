@@ -21,7 +21,10 @@ export PIP_CACHE_DIR="$project_dir/artifacts/cache/pip"
 export XDG_CACHE_HOME="$project_dir/artifacts/cache"
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 mkdir -p "$MPLCONFIGDIR" "$PIP_CACHE_DIR"
-python3 -m venv "$venv_dir"
+if [[ ! -f "$venv_dir/pyvenv.cfg" || ! -x "$venv_dir/bin/python" ]] || \
+        ! "$venv_dir/bin/python" -m pip --version >/dev/null 2>&1; then
+    python3 -m venv "$venv_dir"
+fi
 "$venv_dir/bin/python" -m pip install -r "$project_dir/requirements-dev.lock"
 "$venv_dir/bin/python" -m pip check
 if [[ ! -f "$reference_dir/connectome_data/adjacency_matrix.npy" || ! -f "$reference_dir/connectome_data/neuron_metadata.json" || ! -f "$reference_dir/connectome_data/connection_list.json" ]]; then
