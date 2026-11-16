@@ -12,6 +12,11 @@ eine LED oder ein anderer einfacher physischer Ausgang zur Diskussion. Noch
 ist keines dieser Bauteile ausgewählt oder getestet. Für den verbindlichen
 Projektstand bitte `STATUS.md` verwenden.
 
+**Ergänzung 16.11.2026:** Für erste Sensorexperimente wird testweise ein Leap
+Motion erwogen. Er erkennt Handbewegungen statt allgemeiner Objektabstände;
+die Laufzeit auf dem Raspberry Pi 3B+ ist ungeklärt. Der aktuelle Diagnose- und
+Pi-Prüfplan steht in [PI_SETUP_LEAP.md](PI_SETUP_LEAP.md).
+
 ---
 
 Umsetzungsanleitung – FlyBrain Reflex

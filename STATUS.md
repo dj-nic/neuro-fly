@@ -2,9 +2,16 @@
 
 Stand: 30.10.2026. Projekt: `dj-nic/neuro-fly`, Arbeitstitel FlyBrain Reflex.
 
+**Hardware-Plan ergänzt am 16.11.2026:** Leap Motion wird zunächst als
+testweise Eingabequelle für Handbewegungen geprüft. Pi- und Leap-Hardware sind
+weiterhin nicht vorhanden oder getestet.
+
 ## Aktuelle Hardwareplanung
 
 - Eine Kamera und ein Servo sind für den Demonstrator ausgeschlossen.
+- Als vorläufige Testeingabe ist ein Leap Motion vorgesehen. Er trackt Hände
+  und Finger, misst aber keinen allgemeinen Objektabstand. Modellgeneration,
+  Runtime und direkter Betrieb am Pi sind noch nicht bestätigt.
 - Als realer Abstandssensor stehen ein laserbasierter ToF-Sensor (z. B. VL53L4CD oder VL53L0X) und Ultraschall (z. B. HC-SR04) zur Auswahl. Noch ist kein Modell festgelegt oder angeschlossen.
 - Als einfacher physischer Ausgang kommt voraussichtlich eine LED oder eine andere geeignete Lösung infrage. Ob eine LED die schulische Aktoranforderung erfüllt, ist noch zu klären.
 - Raspberry Pi, Sensor und Ausgang wurden nicht als Hardware getestet; die ARM-Installation ist weiterhin offen.
@@ -26,6 +33,19 @@ Stand: 30.10.2026. Projekt: `dj-nic/neuro-fly`, Arbeitstitel FlyBrain Reflex.
 - Eine GitHub-Actions-CI führt die schnellen Unit-Tests mit NumPy auf
   `ubuntu-latest` und `windows-latest` unter Python 3.12 aus. Sie lädt keine
   Connectome-Daten und testet weder den echten NeuroHex-Kern noch Hardware.
+- `scripts/check_leap_motion.py` prüft USB-Erkennung, bekannte
+  Leap-SDK-Bibliotheken und das Python-Binding. Mit `--smoke-seconds 10`
+  versucht es zusätzlich eine echte LeapC-Service-Verbindung und erwartet
+  Tracking-Frames. Es wurde noch nicht mit einem Leap-Gerät ausgeführt.
+- Der Diagnoseversuch am 16.11.2026 auf Windows 11/AMD64/Python 3.12 fand in
+  dieser Arbeitsumgebung kein Leap-USB-Gerät, keine SDK-Bibliothek und kein
+  `leap`-Binding; der angeforderte Livecheck endete erwartungsgemäß mit
+  Exitcode 2, bevor er eine Serviceverbindung aufbauen konnte. Das sagt nichts
+  über den Pi oder einen anderen Rechner aus.
+- Herstellerdoku (16.11.2026) nennt allgemeine Ultraleap-Linux-Unterstützung
+  für Ubuntu 22.04 x86_64, dokumentiert aber auch SDK-Pfade für Raspberry Pi OS
+  und Linux-ARM-Python-Bindings. Der konkrete Pi-3B+/Leap/OS/Python-Mix bleibt
+  ungeprüft; siehe [docs/PI_SETUP_LEAP.md](docs/PI_SETUP_LEAP.md).
 - Der separate Integrationstest bestand unter WSL mit echtem NeuroHex-Kern,
   Mock-Sensor und Mock-Ausgang: Stillstand blieb ohne Impuls; Annäherung
   erzeugte eine Auslösung aus `escape_magnitude > 0,5`.

@@ -33,15 +33,17 @@ motorische Ausgabe soll eine sichtbare Reaktion auslösen, zunächst vermutlich
 > **Aktuell: Software-Demonstrator ohne Hardware.** Der separate
 > NeuroHex-Referenzkern wurde mit echten Connectome-Daten geprüft; ein eigener
 > Mock-Sensor- und Mock-Ausgangspfad ist implementiert. Eine Kamera
-> und ein Servo sind nicht mehr eingeplant. Als Sensor kommen ein laserbasierter
-> ToF-Abstandssensor oder Ultraschall infrage; als einfacher Ausgang eine LED
-> oder eine andere geeignete Lösung. Bauteile und Pi-Erprobung stehen noch aus.
+> und ein Servo sind nicht mehr eingeplant. Testweise soll ein Leap Motion
+> Handbewegungen liefern; er ersetzt keinen echten Abstandssensor. Ob dessen
+> Tracking-Runtime auf unserem Pi 3B+ funktioniert, ist offen. Als spätere
+> Sensoroptionen bleiben ToF oder Ultraschall im Gespräch; beim einfachen
+> physischen Ausgang kommen LED oder Alternativen infrage.
 
 ## Vom Reiz zur sichtbaren Reaktion
 
 ```mermaid
 flowchart LR
-    A["Mock-Abstand<br/>später ToF oder Ultraschall"] --> B["Annäherungsreiz<br/>looming_strength · 0…1"]
+    A["Mock oder testweise Leap Motion<br/>später ToF oder Ultraschall"] --> B["Annäherungsreiz<br/>looming_strength · 0…1"]
     B --> C["Neuronaler Kern<br/>Giant-Fiber-Schaltkreis · Brian2"]
     C --> D["Motorausgabe<br/>escape_magnitude"]
     D --> E["Hysterese + Cooldown"]
@@ -70,6 +72,10 @@ klären.
 | Unter begrenztem CPU-Zeitbudget messen | 9 Läufe · 315 Simulationsschritte dokumentiert |
 | Mock-Sensor → echtes SNN → Mock-Ausgang | Unter WSL mit echten Connectome-Daten geprüft |
 | Pi 3B+, Abstandssensor und einfacher physischer Ausgang integrieren | Noch offen |
+
+Leap-Motion- und Pi-Vorbereitung sind in [docs/PI_SETUP_LEAP.md](docs/PI_SETUP_LEAP.md)
+beschrieben. Das Diagnoseprogramm prüft USB-Erkennung und SDK-Status; mit
+installierter LeapC-Runtime kann es zusätzlich echte Tracking-Frames testen.
 
 ## Schnellstart
 
@@ -207,6 +213,7 @@ Die ausführliche Aufgabenliste und die bekannten Grenzen stehen in [STATUS.md](
 | [Projektplanung (Word)](docs/Projektplan_Fruchtfliegengehirn_Raspberry_Pi.docx) | Projektidee und aktuelle Hardwareplanung |
 | [Umsetzungsplan](docs/UMSETZUNG.md) | Ursprüngliche Anleitung; aktuelle Hardwareplanung siehe Projektstand |
 | [Pi-Referenzen und Cloud-Messung](docs/PI_3B_PROXY.md) | Quellen, Methode und Grenzen der Drosselung |
+| [Pi- und Leap-Motion-Prüfplan](docs/PI_SETUP_LEAP.md) | Raspberry-Pi-Vorbereitung, Leap-Kompatibilität und Diagnose |
 | [Mitwirken](CONTRIBUTING.md) | Entwicklungsablauf und Anforderungen an Änderungen |
 
 <details>
@@ -222,7 +229,8 @@ neuro-fly/
 ├── scripts/
 │   ├── setup.sh                # Referenz und Python-Umgebung vorbereiten
 │   ├── validate_brain.py       # Echte Daten und Reflexverhalten prüfen
-│   └── cpu_limit.py            # Linux-Prozessgruppe zeitlich drosseln
+│   ├── cpu_limit.py            # Linux-Prozessgruppe zeitlich drosseln
+│   └── check_leap_motion.py    # USB/SDK prüfen, optional echte LeapC-Frames testen
 ├── requirements-dev.lock       # Getestete Python-Paketversionen
 ├── CONTRIBUTING.md
 └── STATUS.md

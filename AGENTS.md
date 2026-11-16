@@ -26,18 +26,21 @@ Das Fliegennetz ist ein **aus echten Connectome-Daten rekonstruierter neuronaler
 - **Keine Hardware vorhanden/getestet:** weder Pi 3B+ noch Sensor, LED/anderer Ausgang oder GPIO. Auch die ARM-Paketinstallation ist **nicht** nachgewiesen. Cloud-CPU-Drosselung ist **keine** Pi-Emulation. Reaktionszeit <1 s ist ein **Ziel**, kein Messwert.
 - `neuro_fly/` enthält einen hardwarefreien Sensor → Brainadapter → Mock-Ausgang-Pfad mit Schutzlogik. 33 schnelle Unit-Tests bestanden unter Windows und WSL/Python 3.12; der separate WSL-Integrationstest bestand mit echtem Kern und 992 Neuronen/1.308 Verbindungen. Testdoubles sind keine neuronalen Nachweise.
 
-## Geplante Hardware
+## Geplante und testweise Hardware
 
 - **Pi 3B+**, 64-Bit-Raspberry-Pi-OS nach Kompatibilitätsprüfung.
-- **Sensoroptionen:** laserbasierter ToF-Abstandssensor (z. B. VL53L4CD oder VL53L0X) oder Ultraschall (z. B. HC-SR04). Noch nicht ausgewählt, gekauft, angeschlossen oder validiert. Bei HC-SR04 den 5-V-ECHO-Pegel vor dem Pi-GPIO auf 3,3 V anpassen.
+- **Testweise Sensorquelle:** Leap Motion für reproduzierbare Handbewegungen. Er ist ein Hand-/Fingertracker und kein ToF-/Ultraschall-Abstandssensor. Noch nicht vorhanden, installiert oder getestet. Die konkreten Runtime- und OS-Anforderungen hängen von der Controller-Generation ab.
+- **Möglicher späterer Abstandssensor:** laserbasierter ToF (z. B. VL53L4CD oder VL53L0X) oder Ultraschall (z. B. HC-SR04). Noch nicht ausgewählt. Bei HC-SR04 den 5-V-ECHO-Pegel vor dem Pi-GPIO auf 3,3 V anpassen.
 - **Ausgang:** LED mit geeignetem Vorwiderstand ist die aktuelle einfache Möglichkeit; eine andere geeignete physische Ausgabe bleibt möglich. Noch nicht ausgewählt oder getestet; die Erfüllung der schulischen Aktoranforderung ist zu klären.
 - Hardwarewahl darf nicht ohne Rücksprache als endgültig ausgegeben werden. Kamera und Servo sind nicht Teil der aktuellen Planung.
+
+Für Leap-Kompatibilität und Pi-Schritte gilt [docs/PI_SETUP_LEAP.md](docs/PI_SETUP_LEAP.md). Ultraleap dokumentiert Linux x86_64, SDK-Pfade für Raspberry Pi OS und Linux-ARM-Python-Bindings, aber daraus ist keine funktionierende Leap-Runtime auf unserem Pi 3B+ nachgewiesen. Erst USB, SDK, Service, Tracking-Frames und SNN-Kopplung getrennt prüfen. Falls die Runtime nur auf Windows funktioniert, kann ein PC den normierten Reiz an den Pi senden; dies ist keine direkt am Pi angeschlossene Sensorhardware.
 
 ## Architekturvorgaben für neue Implementierungen
 
 Entwickle kleine, separat testbare Module; die Struktur darf passend zum bestehenden Repo gewählt werden:
 
-1. **Sensoradapter**: austauschbar zwischen Mock-Sensor, später ToF- und Ultraschallsensor. Erzeugt `looming_strength: float` in `[0.0, 1.0]` aus **Annäherung**, nicht nur aus einem starren Distanzschwellwert. Messfehler, ungültige Werte, Glättung, Richtung und Zeitabstand von Messungen berücksichtigen.
+1. **Sensoradapter**: austauschbar zwischen Mock-Sensor, testweisem Leap Motion, später ToF- und Ultraschallsensor. Erzeugt `looming_strength: float` in `[0.0, 1.0]` aus einer zeitlich aufgelösten Annäherungsbewegung, nicht nur aus einem starren Distanzschwellwert. Leap-Handposition ist eine technische Annäherung. Messfehler, fehlende/veraltete Frames, Glättung, Richtung und Zeitabstand berücksichtigen.
 2. **Brainadapter**: kapselt `NeuroHexBrain.step(visual_input=looming_strength, mechanosensory_input=0.0, duration_ms=20.0)` und dessen `escape_magnitude`. Benutze echte validierte Connectome-Daten; kein unbemerktes Dummy-/Zufallsnetz. Fehler bei fehlenden Daten explizit machen.
 3. **Aktoradapter**: Mock-Ausgang mit Ereignislog/Zeiten; später eine geeignete GPIO-Ausgabe wie LED. Ein Schwellwert **auf `escape_magnitude` des SNN**, Hysterese, Cooldown und definierte Fehlerreaktion schützen vor Dauerleuchten oder Flattern.
 4. **Orchestrierung**: Sensor → SNN → einfacher Aktor, mit klarer Messung von Sensorauslesung, Brain-Step und Ausgangszeit. Sensor und Aktor müssen ohne reale Hardware ersetzbar bleiben.
@@ -66,13 +69,15 @@ Arbeite inkrementell und dokumentiere Resultate:
 
 1. Bestehenden Softwarepfad und offenen Stand prüfen; die vorhandenen Mock-Adapter und Unit-Tests nicht erneut als neue Arbeit behandeln.
 2. Den separaten Integrationstest mit gepinntem NeuroHex-Kern und echten Daten bei Änderungen erneut unter Linux/WSL ausführen; fehlende Voraussetzungen und Ergebnisse dokumentieren.
-3. Datenprovenienz und Lizenz/Attribution klären; Filter- und Schwellwerte später mit dem gewählten Sensor kalibrieren.
-4. Wenn möglich reproduzierbare Profiling-Verbesserungen untersuchen; **Biologie/Parameter nicht still ändern**. Vorher/nachher mit gleichem Datensatz und Stimulus testen.
-5. `README.md`, `STATUS.md` und ggf. `docs/` auf den nachgewiesenen Stand bringen; Hardwareintegration ausdrücklich offen lassen.
+3. Leap-Motion-Controller-Generation feststellen; `scripts/check_leap_motion.py` erst ohne SDK, danach mit `--smoke-seconds 10` ausführen, wenn Hersteller-Runtime und Python-Bindings installiert sind. USB-Erkennung nicht als Tracking-Nachweis ausgeben.
+4. Pi-Vorbereitung nach [docs/PI_SETUP_LEAP.md](docs/PI_SETUP_LEAP.md) durchführen. `requirements-dev.lock` ist ein x86_64-Entwicklungsstand; `scripts/setup.sh` installiert diesen vollständigen Lock und ist kein bestätigtes Pi-Setup. ARM-Pakete, RAM, Service und reale Laufzeiten einzeln belegen.
+5. Datenprovenienz und Lizenz/Attribution klären; Filter und Schwellwerte später mit dem gewählten Sensor kalibrieren.
+6. Wenn möglich reproduzierbare Profiling-Verbesserungen untersuchen; **Biologie/Parameter nicht still ändern**. Vorher/nachher mit gleichem Datensatz und Stimulus testen.
+7. `README.md`, `STATUS.md` und ggf. `docs/` auf den nachgewiesenen Stand bringen; Hardwareintegration ausdrücklich offen lassen.
 
 ## Sobald der Pi und die Bauteile verfügbar sind
 
-- ARM-/Python-/Brian2-Cython-Kompatibilität, verfügbare CPU/RAM, Thermik, Stromversorgung und Startup prüfen.
+- ARM-/Python-/Brian2-Cython- und Leap-Runtime-Kompatibilität, verfügbare CPU/RAM, Thermik, Stromversorgung und Startup prüfen.
 - Unveränderte Referenz mit validierten Connectome-Daten benchmarken.
 - Erst Sensor und LED/anderen Ausgang **einzeln** und sicher prüfen, dann Kopplung testen.
 - End-to-End-Latenz **vom äußeren Reiz bis zur tatsächlichen Ausgabe** messen; Ergebnisse getrennt von Cloud-/Mock-Messungen ausweisen.

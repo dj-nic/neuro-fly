@@ -30,10 +30,14 @@ Der funktionale Check `scripts/validate_brain.py` braucht echte Daten und prüft
 35 Schritte mit Ruhe- und Fluchtverhalten, siehe README. Schnelle Unit-Tests
 laufen mit `python -m unittest discover -s tests/unit -v`; der separate
 Integrationstest benötigt den gepinnten Referenz-Checkout und echte Daten unter
-Linux/WSL. Neue Adapter sollten gezielte Verhaltenstests erhalten. Eine
-GitHub Actions führt die schnellen Unit-Tests bei Pushes und Pull Requests unter
+Linux/WSL. Neue Adapter sollten gezielte Verhaltenstests erhalten. GitHub
+Actions führt die schnellen Unit-Tests bei Pushes und Pull Requests unter
 Ubuntu und Windows mit Python 3.12 aus. Der hardware- und datenabhängige
 Integrationstest bleibt ein manueller Linux/WSL-Schritt.
+
+Für Raspberry-Pi- oder Leap-Motion-Arbeiten zuerst den Ablauf in
+[docs/PI_SETUP_LEAP.md](docs/PI_SETUP_LEAP.md) lesen. Hardwareerkennung,
+Hersteller-Runtime und echte Tracking-Frames sind getrennte Prüfschritte.
 
 ## Dateien und Quellen
 
