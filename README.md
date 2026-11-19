@@ -16,6 +16,8 @@ Ein Forschungsprototyp für neuronale Robotik auf dem Raspberry Pi 3B+.
 
 [Schnellstart](#schnellstart) · [Ergebnisse](#bisherige-ergebnisse) · [Projektstand](STATUS.md) · [Mitmachen](CONTRIBUTING.md)
 
+[3D-Druck und mechanischer Fluchtreflex](hardware/NeuroFly/README.md)
+
 </div>
 
 ---

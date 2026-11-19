@@ -1,5 +1,7 @@
 # Projektstand und offene Aufgaben
 
+**Mechanikentwurf vom 19.11.2026:** Die [3D-Druckdateien und CAD-Quellen](hardware/NeuroFly/README.md) enthalten einen MG996R-Schwenkarm und einen modularen Sensorträger. Diese vom Nutzer gewünschte Servo-Variante ergänzt die bisherige Hardwareplanung. Passung, Druck und Betrieb an realer Hardware sind noch nicht geprüft. Der vorhandene Softwarepfad steuert den Servo noch nicht an.
+
 Stand: 30.10.2026. Projekt: `dj-nic/neuro-fly`, Arbeitstitel FlyBrain Reflex.
 
 **Hardware-Plan ergänzt am 16.11.2026:** Leap Motion wird zunächst als
